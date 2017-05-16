@@ -6,52 +6,29 @@
 //  Copyright (c) 2014 Iftekhar. All rights reserved.
 //
 
-import Foundation
 import UIKit
 
-class TextViewSpecialCaseViewController: UIViewController, UITextViewDelegate {
+class TextViewSpecialCaseViewController: UIViewController, UITextViewDelegate, UIPopoverPresentationControllerDelegate {
     
-    @IBOutlet private var buttonPush : UIButton!
-    @IBOutlet private var buttonPresent : UIButton!
-    @IBOutlet private var barButtonAdjust : UIBarButtonItem!
-    
-    @IBAction func canAdjustTextView (barButton : UIBarButtonItem!) {
-        
-        if (IQKeyboardManager.sharedManager().canAdjustTextView == true) {
-            IQKeyboardManager.sharedManager().canAdjustTextView = false
-        } else {
-            IQKeyboardManager.sharedManager().canAdjustTextView = true
-        }
-
-        refreshUI()
-    }
+    @IBOutlet fileprivate var buttonPush : UIButton!
+    @IBOutlet fileprivate var buttonPresent : UIButton!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         if (self.navigationController == nil)
         {
-            buttonPush.hidden = true
-            buttonPresent.setTitle("Dismiss", forState: UIControlState.Normal)
+            buttonPush.isHidden = true
+            buttonPresent.setTitle("Dismiss", for: UIControlState())
         }
     }
     
-    override func viewWillAppear (animated : Bool) {
+    override func viewWillAppear (_ animated : Bool) {
         
         super.viewWillAppear(animated)
-        refreshUI()
     }
     
-    func refreshUI() {
-        if (IQKeyboardManager.sharedManager().canAdjustTextView == true) {
-            barButtonAdjust.title = "Disable Adjust"
-        } else {
-            barButtonAdjust.title = "Enable Adjust"
-        }
-    }
-
-    
-    func textView(textView: UITextView, shouldChangeTextInRange range: NSRange, replacementText text: String) -> Bool {
+    func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
         
         if text == "\n" {
             textView.resignFirstResponder()
@@ -60,19 +37,44 @@ class TextViewSpecialCaseViewController: UIViewController, UITextViewDelegate {
         return true
     }
     
-    @IBAction func presentClicked (barButton : UIButton!) {
+    @IBAction func presentClicked (_ barButton : UIButton!) {
         
         if (navigationController) != nil {
             let controller : TextViewSpecialCaseViewController = TextViewSpecialCaseViewController()
-            presentViewController(controller, animated: true, completion: nil)
+            present(controller, animated: true, completion: nil)
         } else {
-            dismissViewControllerAnimated(true, completion: nil)
+            dismiss(animated: true, completion: nil)
         }
     }
     
-    override func shouldAutorotate() -> Bool {
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        
+        if let identifier = segue.identifier {
+            
+            if identifier == "SettingsNavigationController" {
+                
+                let controller = segue.destination
+                
+                controller.modalPresentationStyle = .popover
+                controller.popoverPresentationController?.barButtonItem = sender as? UIBarButtonItem
+                
+                let heightWidth = max(UIScreen.main.bounds.width, UIScreen.main.bounds.height);
+                controller.preferredContentSize = CGSize(width: heightWidth, height: heightWidth)
+                controller.popoverPresentationController?.delegate = self
+            }
+        }
+    }
+    
+    func adaptivePresentationStyle(for controller: UIPresentationController) -> UIModalPresentationStyle {
+        return .none
+    }
+    
+    func prepareForPopoverPresentation(_ popoverPresentationController: UIPopoverPresentationController) {
+        self.view.endEditing(true)
+    }
+    
+    override var shouldAutorotate : Bool {
         return true
     }
-
 }
 

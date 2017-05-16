@@ -7,22 +7,49 @@
 //
 
 import UIKit
+import IQKeyboardManagerSwift
 
-class BottomBlankSpaceViewController : UIViewController {
+class BottomBlankSpaceViewController : UIViewController, UIPopoverPresentationControllerDelegate {
     
-    @IBOutlet private var switchPreventShowingBottomBlankSpace : UISwitch!
+    @IBOutlet fileprivate var switchPreventShowingBottomBlankSpace : UISwitch!
 
-    override func viewWillAppear(animated : Bool) {
+    override func viewWillAppear(_ animated : Bool) {
         super.viewWillAppear(animated)
         
-        switchPreventShowingBottomBlankSpace.on = IQKeyboardManager.sharedManager().preventShowingBottomBlankSpace
+        switchPreventShowingBottomBlankSpace.isOn = IQKeyboardManager.sharedManager().preventShowingBottomBlankSpace
     }
     
-    @IBAction func preventSwitchAction (sender: UISwitch!) {
-        IQKeyboardManager.sharedManager().preventShowingBottomBlankSpace = true
+    @IBAction func preventSwitchAction (_ sender: UISwitch!) {
+        IQKeyboardManager.sharedManager().preventShowingBottomBlankSpace = sender.isOn
     }
     
-    override func shouldAutorotate() -> Bool {
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        
+        if let identifier = segue.identifier {
+            
+            if identifier == "SettingsNavigationController" {
+                
+                let controller = segue.destination
+                
+                controller.modalPresentationStyle = .popover
+                controller.popoverPresentationController?.barButtonItem = sender as? UIBarButtonItem
+                
+                let heightWidth = max(UIScreen.main.bounds.width, UIScreen.main.bounds.height);
+                controller.preferredContentSize = CGSize(width: heightWidth, height: heightWidth)
+                controller.popoverPresentationController?.delegate = self
+            }
+        }
+    }
+
+    func adaptivePresentationStyle(for controller: UIPresentationController) -> UIModalPresentationStyle {
+        return .none
+    }
+
+    func prepareForPopoverPresentation(_ popoverPresentationController: UIPopoverPresentationController) {
+        self.view.endEditing(true)
+    }
+
+    override var shouldAutorotate : Bool {
         return true
     }
 }

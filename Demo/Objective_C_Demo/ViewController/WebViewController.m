@@ -4,6 +4,10 @@
 
 #import "WebViewController.h"
 
+@interface WebViewController ()
+
+@end
+
 @implementation WebViewController
 {
     UIActivityIndicatorView *activity;
@@ -34,16 +38,6 @@
 - (void)webView:(UIWebView *)webView didFailLoadWithError:(NSError *)error
 {
     [activity stopAnimating];
-}
-
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
-{
-    return YES;
-}
-
-- (BOOL)shouldAutorotate
-{
-    return YES;
 }
 
 @end

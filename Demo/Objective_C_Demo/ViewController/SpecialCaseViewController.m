@@ -7,7 +7,7 @@
 #import "IQKeyboardManager.h"
 #import "IQUIView+IQKeyboardToolbar.h"
 
-@interface SpecialCaseViewController ()<UISearchBarDelegate,UITextFieldDelegate,UITextViewDelegate,UIGestureRecognizerDelegate>
+@interface SpecialCaseViewController ()<UISearchBarDelegate,UITextFieldDelegate,UITextViewDelegate,UIGestureRecognizerDelegate,UIPopoverPresentationControllerDelegate>
 
 -(void)updateUI;
 
@@ -48,11 +48,20 @@
 
 - (IBAction)showAlertClicked:(UIButton *)sender
 {
-    [self.view endEditing:YES];
+    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"IQKeyboardManager" message:@"It doesn't affect UIAlertController (Doesn't add IQToolbar on it's textField" preferredStyle:UIAlertControllerStyleAlert];
+    
+    [alertController addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleCancel handler:nil]];
 
-    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"IQKeyboardManager" message:@"It doesn't affect UIAlertView (Doesn't add IQToolbar on it's textField" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
-    alertView.alertViewStyle = UIAlertViewStyleLoginAndPasswordInput;
-    [alertView show];
+    [alertController addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull textField) {
+        textField.placeholder = @"Username";
+    }];
+    
+    [alertController addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull textField) {
+        textField.placeholder = @"Password";
+        textField.secureTextEntry = YES;
+    }];
+    
+    [self presentViewController:alertController animated:YES completion:nil];
 }
 
 - (void)searchBarTextDidBeginEditing:(UISearchBar *)searchBar
@@ -126,8 +135,11 @@
         if (textField.isAskingCanBecomeFirstResponder == NO)
         {
 ////            //Do your work on tapping textField.
-            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"IQKeyboardManager" message:@"Do your custom work here" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
-            [alertView show];
+            UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"IQKeyboardManager" message:@"Do your custom work here" preferredStyle:UIAlertControllerStyleAlert];
+            
+            [alertController addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleCancel handler:nil]];
+            
+            [self presentViewController:alertController animated:YES completion:nil];
         }
 
         return NO;
@@ -141,6 +153,29 @@
 
 - (void)textFieldDidEndEditing:(UITextField *)textField
 {
+}
+
+-(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
+{
+    if ([segue.identifier isEqualToString:@"SettingsNavigationController"])
+    {
+        segue.destinationViewController.modalPresentationStyle = UIModalPresentationPopover;
+        segue.destinationViewController.popoverPresentationController.barButtonItem = sender;
+        
+        CGFloat heightWidth = MAX(CGRectGetWidth([[UIScreen mainScreen] bounds]), CGRectGetHeight([[UIScreen mainScreen] bounds]));
+        segue.destinationViewController.preferredContentSize = CGSizeMake(heightWidth, heightWidth);
+        segue.destinationViewController.popoverPresentationController.delegate = self;
+    }
+}
+
+- (UIModalPresentationStyle)adaptivePresentationStyleForPresentationController:(UIPresentationController *)controller
+{
+    return UIModalPresentationNone;
+}
+
+-(void)prepareForPopoverPresentation:(UIPopoverPresentationController *)popoverPresentationController
+{
+    [self.view endEditing:YES];
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation

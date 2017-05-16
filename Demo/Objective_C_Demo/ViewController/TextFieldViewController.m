@@ -4,65 +4,48 @@
 
 #import "TextFieldViewController.h"
 #import "IQKeyboardManager.h"
-#import "IQKeyboardReturnKeyHandler.h"
 #import "IQDropDownTextField.h"
 #import "IQUIView+IQKeyboardToolbar.h"
+#import "IQUITextFieldView+Additions.h"
 
-@interface TextFieldViewController ()
-
--(void)refreshUI;
+@interface TextFieldViewController ()<UIPopoverPresentationControllerDelegate>
 
 @end
 
 @implementation TextFieldViewController
 {
-    IQKeyboardReturnKeyHandler *returnKeyHandler;
+    IBOutlet UITextField *textField3;
     IBOutlet IQDropDownTextField *dropDownTextField;
 }
 
 #pragma mark - View lifecycle
 
--(IBAction)disableKeyboardManager:(UIBarButtonItem*)barButton
-{
-    if ([[IQKeyboardManager sharedManager] isEnabled])
-    {
-        [[IQKeyboardManager sharedManager] setEnable:NO];
-    }
-    else
-    {
-        [[IQKeyboardManager sharedManager] setEnable:YES];
-    }
-
-    [self refreshUI];
-}
-
 -(void)previousAction:(UITextField*)textField
 {
-    NSLog(@"%@ : %@",textField,NSStringFromSelector(_cmd));
+    NSLog(@"%@",NSStringFromSelector(_cmd));
 }
 
 -(void)nextAction:(UITextField*)textField
 {
-    NSLog(@"%@ : %@",textField,NSStringFromSelector(_cmd));
+    NSLog(@"%@",NSStringFromSelector(_cmd));
 }
 
 -(void)doneAction:(UITextField*)textField
 {
-    NSLog(@"%@ : %@",textField,NSStringFromSelector(_cmd));
+    NSLog(@"%@",NSStringFromSelector(_cmd));
 }
 
 - (void)viewDidLoad
 {
     [super viewDidLoad];
     
-    [dropDownTextField setCustomPreviousTarget:self action:@selector(previousAction:)];
-    [dropDownTextField setCustomNextTarget:self action:@selector(nextAction:)];
-    [dropDownTextField setCustomDoneTarget:self action:@selector(doneAction:)];
+    [textField3 setCustomPreviousTarget:self action:@selector(previousAction:)];
+    [textField3 setCustomNextTarget:self action:@selector(nextAction:)];
+    [textField3 setCustomDoneTarget:self action:@selector(doneAction:)];
     
-    returnKeyHandler = [[IQKeyboardReturnKeyHandler alloc] initWithViewController:self];
-    [returnKeyHandler setLastTextFieldReturnKeyType:UIReturnKeyDone];
+    dropDownTextField.keyboardDistanceFromTextField = 150;
     
-    [dropDownTextField setItemList:[NSArray arrayWithObjects:@"Zero Line Of Code",
+    [dropDownTextField setItemList:@[@"Zero Line Of Code",
                                      @"No More UIScrollView",
                                      @"No More Subclasses",
                                      @"No More Manual Work",
@@ -78,7 +61,7 @@
                                      @"Auto adjust textView's height ",
                                      @"Adopt tintColor from textField",
                                      @"Customize keyboardAppearance",
-                                     @"play sound on next/prev/done",nil]];
+                                     @"play sound on next/prev/done"]];
 }
 
 -(void)viewWillAppear:(BOOL)animated
@@ -90,25 +73,6 @@
         [buttonPush setHidden:YES];
         [buttonPresent setTitle:@"Dismiss" forState:UIControlStateNormal];
     }
-
-    [self refreshUI];
-}
-
--(void)refreshUI
-{
-    if ([[IQKeyboardManager sharedManager] isEnabled])
-    {
-        [barButtonDisable setTitle:@"Disable"];
-    }
-    else
-    {
-        [barButtonDisable setTitle:@"Enable"];
-    }
-}
-
--(void)dealloc
-{
-    returnKeyHandler = nil;
 }
 
 - (IBAction)presentClicked:(id)sender
@@ -120,10 +84,7 @@
             UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:controller];
             navigationController.navigationBar.tintColor = self.navigationController.navigationBar.tintColor;
             
-#ifdef NSFoundationVersionNumber_iOS_6_1
             navigationController.navigationBar.barTintColor = self.navigationController.navigationBar.barTintColor;
-#endif
-            navigationController.navigationBar.titleTextAttributes = self.navigationController.navigationBar.titleTextAttributes;
             
             [navigationController setModalTransitionStyle:arc4random()%4];
             
@@ -146,6 +107,29 @@
     @finally {
         
     }
+}
+
+-(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
+{
+    if ([segue.identifier isEqualToString:@"SettingsNavigationController"])
+    {
+        segue.destinationViewController.modalPresentationStyle = UIModalPresentationPopover;
+        segue.destinationViewController.popoverPresentationController.barButtonItem = sender;
+        
+        CGFloat heightWidth = MAX(CGRectGetWidth([[UIScreen mainScreen] bounds]), CGRectGetHeight([[UIScreen mainScreen] bounds]));
+        segue.destinationViewController.preferredContentSize = CGSizeMake(heightWidth, heightWidth);
+        segue.destinationViewController.popoverPresentationController.delegate = self;
+    }
+}
+
+- (UIModalPresentationStyle)adaptivePresentationStyleForPresentationController:(UIPresentationController *)controller
+{
+    return UIModalPresentationNone;
+}
+
+-(void)prepareForPopoverPresentation:(UIPopoverPresentationController *)popoverPresentationController
+{
+    [self.view endEditing:YES];
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation

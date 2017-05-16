@@ -5,7 +5,7 @@
 #import "ViewController.h"
 #import "IQKeyboardManager.h"
 
-@interface ViewController ()<UIActionSheetDelegate>
+@interface ViewController ()<UIPopoverPresentationControllerDelegate>
 
 @end
 
@@ -37,16 +37,61 @@
     [[IQKeyboardManager sharedManager] setToolbarManageBehaviour:IQAutoToolbarByPosition];
 }
 
+//- (nullable UIViewController *)presentationController:(UIPresentationController *)controller viewControllerForAdaptivePresentationStyle:(UIModalPresentationStyle)style
+//{
+//    if (style == UIModalPresentationOverFullScreen)
+//    {
+//        return controller.presentedViewController;
+//    }
+//    else
+//    {
+//        return nil;
+//    }
+//    NSLog(@"%@",controller.presentedViewController);
+//    NSLog(@"%@",controller.presentingViewController);
+//    return controller.presentedViewController;
+//}
+
+-(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+}
+
+-(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
+{
+    if ([segue.identifier isEqualToString:@"SettingsNavigationController"])
+    {
+        segue.destinationViewController.modalPresentationStyle = UIModalPresentationPopover;
+        segue.destinationViewController.popoverPresentationController.barButtonItem = sender;
+        
+        CGFloat heightWidth = MAX(CGRectGetWidth([[UIScreen mainScreen] bounds]), CGRectGetHeight([[UIScreen mainScreen] bounds]));
+        segue.destinationViewController.preferredContentSize = CGSizeMake(heightWidth, heightWidth);
+        segue.destinationViewController.popoverPresentationController.delegate = self;
+    }
+    else if ([segue.identifier isEqualToString:@"PopoverViewController"])
+    {
+        segue.destinationViewController.modalPresentationStyle = UIModalPresentationPopover;
+        segue.destinationViewController.popoverPresentationController.sourceView = sender;
+        
+        CGFloat heightWidth = MAX(CGRectGetWidth([[UIScreen mainScreen] bounds]), CGRectGetHeight([[UIScreen mainScreen] bounds]));
+        segue.destinationViewController.preferredContentSize = CGSizeMake(heightWidth, heightWidth);
+        segue.destinationViewController.popoverPresentationController.delegate = self;
+    }
+}
+
+- (UIModalPresentationStyle)adaptivePresentationStyleForPresentationController:(UIPresentationController *)controller
+{
+    return UIModalPresentationNone;
+}
+
+-(void)prepareForPopoverPresentation:(UIPopoverPresentationController *)popoverPresentationController
+{
+    [self.view endEditing:YES];
+}
+
 -(BOOL)shouldAutorotate
 {
     return NO;
-}
-
--(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    UITableViewCell *cell = [super tableView:tableView cellForRowAtIndexPath:indexPath];
-    cell.backgroundColor = [UIColor clearColor];
-    return cell;
 }
 
 -(BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation

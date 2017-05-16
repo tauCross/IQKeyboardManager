@@ -4,7 +4,7 @@
 
 #import "TextSelectionViewController.h"
 
-@interface TextSelectionViewController ()
+@interface TextSelectionViewController ()<UIPopoverPresentationControllerDelegate>
 
 @property (nonatomic, strong) NSArray *data;
 
@@ -20,9 +20,9 @@
     [super viewDidLoad];
     self.tableView.delegate = self;
     self.tableView.dataSource = self;
-    _data = [NSArray arrayWithObjects:@"Hello", @"This is a demo code", @"Issue #56", @"With mutiple cells", @"And some useless text.",
+    _data = @[@"Hello", @"This is a demo code", @"Issue #56", @"With mutiple cells", @"And some useless text.",
               @"Hello", @"This is a demo code", @"Issue #56", @"With mutiple cells", @"And some useless text.",
-              @"Hello", @"This is a demo code", @"Issue #56", @"With mutiple cells", @"And some useless text.",nil];
+              @"Hello", @"This is a demo code", @"Issue #56", @"With mutiple cells", @"And some useless text."];
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
@@ -50,7 +50,7 @@
         UITextView *textView = [[UITextView alloc] initWithFrame:CGRectMake(5,7,135,30)];
         textView.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
         textView.backgroundColor = [UIColor clearColor];
-        textView.text = [_data objectAtIndex:indexPath.row];
+        textView.text = _data[indexPath.row];
         textView.dataDetectorTypes = UIDataDetectorTypeAll;
         textView.scrollEnabled = NO;
         textView.editable = NO;
@@ -58,6 +58,29 @@
     }
     
     return cell;
+}
+
+-(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
+{
+    if ([segue.identifier isEqualToString:@"SettingsNavigationController"])
+    {
+        segue.destinationViewController.modalPresentationStyle = UIModalPresentationPopover;
+        segue.destinationViewController.popoverPresentationController.barButtonItem = sender;
+        
+        CGFloat heightWidth = MAX(CGRectGetWidth([[UIScreen mainScreen] bounds]), CGRectGetHeight([[UIScreen mainScreen] bounds]));
+        segue.destinationViewController.preferredContentSize = CGSizeMake(heightWidth, heightWidth);
+        segue.destinationViewController.popoverPresentationController.delegate = self;
+    }
+}
+
+- (UIModalPresentationStyle)adaptivePresentationStyleForPresentationController:(UIPresentationController *)controller
+{
+    return UIModalPresentationNone;
+}
+
+-(void)prepareForPopoverPresentation:(UIPopoverPresentationController *)popoverPresentationController
+{
+    [self.view endEditing:YES];
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
